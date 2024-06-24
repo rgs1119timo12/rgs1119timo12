@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: demo-frontend
+  name: demo-frontend
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-frontend
+  template:
+    metadata:
+      labels:
+        app: demo-frontend
+    spec:
+      containers:
+        - name: demo-frontend
+          image: "demo-frontend"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: gitlab-token-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-frontend
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: "/"
+  labels:
+    app.kubernetes.io/instance: demo-frontend
+spec:
+  selector:
+    app: demo-frontend
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

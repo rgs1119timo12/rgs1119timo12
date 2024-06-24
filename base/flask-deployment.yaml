@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-flask-backend
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-flask-backend
+  template:
+    metadata:
+      labels:
+        app: demo-flask-backend
+    spec:
+      containers:
+        - name: demo-flask-backend
+          image: registry.gitlab.com/cjconnect/argocd-cicd-test/demo-flask-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: gitlab-token-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-flask-backend
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: "/contents/aws"
+spec:
+  selector:
+    app: demo-flask-backend
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
